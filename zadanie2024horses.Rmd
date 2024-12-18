@@ -77,7 +77,6 @@ x7_valach <- horses$X7[horses$gender == "valach"]
 par(mfrow = c(2, 1))
 hist(x7_valach, main = "Histogram tepovej frekvencie valacha po otvorení dáždnika", xlab = "Tepová frekvencia")
 boxplot(x7_valach, main = "Boxplot tepovej frekvencie valacha po otvorení dáždnika")
-
 ```
 
 <i>
@@ -130,10 +129,66 @@ s správne interpretujte výsledek testu. Diskutujte, zdali jsou splněny  před
 
 
 ```{r}
-### Tu môžete doplniť potrebný zdrojový kod pre program R
+x5 <- horses$X5
+x4 <- horses$X4
+par(mfrow = c(2, 1))
+hist(x5, col = rgb(1, 0, 0, 0.5), xlim = c(min(x5, x4), max(x5, x4)), main = "Histogram tepovej frekvencie", xlab = "Tepová frekvencia")
+hist(x4, col = rgb(0, 0, 1, 0.5), add = TRUE)
+boxplot(x5, x4,
+    col = c(rgb(1, 0, 0, 0.5), rgb(0, 0, 1, 0.5)),
+    names = c("Použitie spreju", "Rozmačkaní plechovky"),
+    main = "Boxplot tepovej frekvencie"
+)
 ```
 
-<i>Tu môžete doplniť potrebné komentáre k Vášmu riešeniu</i>
+<i>
+Opět začneme vizualizací dat.
+Sestavíme konfindencni interval pro rozdil dat x5 a x4.
+</i>
+
+```{r}
+ci.t(x5 - x4)
+
+hist(x5 - x4, main = "Histogram rozdilu tepovej frekvencie", xlab = "Rozdil tepovej frekvencie")
+boxplot(x5 - x4, main = "Boxplot rozdilu tepovej frekvencie")
+
+qqnorm(x5 - x4)
+qqline(x5 - x4)
+```
+
+<i>
+> ci.t(x5-x4)
+   CI.low      Mean     CI.up
+ 2.329199 14.552632 26.776064
+
+Je videt, ze konfidencni interval pro rozdil je (2.33, 26.78). A stredni hodnota rozdilu rohzodne neni nulova.
+
+Dal budeme testovat nasledujici hypotezu:
+    Nulova hypoteza - stredni hodnoty dat x5 a x4 jsou stejne
+    Alternativni hypoteza - stredni hodnoty dat x5 a x4 jsou ruzne
+
+Budeme potrebovat pouzit parovy test. Z vizualizace muzem soudit, ze rozdily dat jsou symetricke, 
+nemaji prilis odlehle hodnoty. Z vizualizace normality, muzeme spis soudit, ze data jsou oproti primce x=y rostouci,
+tudiz data nejsou normalni, ale neni to dramaticke. 
+Radsi se spolehneme na symetrii nez normalitu a pouzijeme Wilcoxonuv test. 
+</i>
+
+```{r}
+wilcox.test(x5, x4, paired = TRUE, correct = FALSE)
+```
+
+<i>
+Vysledek testu je:
+
+        Wilcoxon signed rank test
+
+data:  x5 and x4
+V = 489.5, p-value = 0.004246
+alternative hypothesis: true location shift is not equal to 0    
+
+Jelikoz p-hodnota je radove mensi nez 0.05, test zamita nulovou hypotezu s velkou rezervou. 
+Muzeme tvrdit, ze stredni hodnoty tepu pri pouziti spreje a rozmackani plechovky nejsou stejne.
+</i>
 
 
 <font color = "blue">*Maximálné bodové ohodnotenie: 10 bodov*</font>
@@ -150,10 +205,44 @@ s správne interpretujte výsledek testu.
 
 
 ```{r}
-### Tu môžete doplniť potrebný zdrojový kod pre program R
+summary(horses$gender)
+x6_valach <- horses$X6[horses$gender == "valach"]
+x6_hrebec <- horses$X6[horses$gender == "hrebec"]
+par(mfrow = c(3, 1))
+length(x6_valach)
+length(x6_hrebec)
+hist(x6_valach, col = rgb(1, 0, 0, 0.5), main = "Histogram tepovej frekvencie valachu", xlab = "Tepová frekvencia")
+hist(x6_hrebec, col = rgb(0, 0, 1, 0.5), main = "Histogram tepovej frekvencie hřebců", xlab = "Tepová frekvencia")
+boxplot(x6_valach, x6_hrebec, col = c(rgb(1, 0, 0, 0.5), rgb(0, 0, 1, 0.5)), names = c("Valach", "Hřebec"), main = "Boxplot tepovej frekvencie")
 ```
 
-<i>Tu môžete doplniť potrebné komentáre k Vášmu riešeniu</i>
+<i>
+Vybereme dana data o tepovych frekvencich po hozeni micem do promennych x6_valach a x6_hrebec. A data vizualizujeme.
+
+Budeme testovat nasledujici hypotezy:
+    Nulova hypoteza - stredni hodnoty dat x6_valach a x6_hrebec jsou stejne
+    Alternativni hypoteza - stredni hodnoty dat x6_valach a x6_hrebec jsou ruzne
+
+Budeme potrebovat pouzit dvouvzorkovy test. Z vizualizace muzeme soudit, ze data nejsou symetricka ani normalni.
+Tepova frekvence je naopak pomerne spojita velicina, zaroven ale nemame moc mereni, pro hrabce pouze 6. 
+Pouzijeme Kolmogorovův-Smirnovův test, ktery je robustni vuci normalite dat.
+</i>
+
+```{r}
+ks.test(x6_valach, x6_hrebec)
+```
+
+<i>
+
+        Exact two-sample Kolmogorov-Smirnov test
+
+data:  x6_valach and x6_hrebec
+D = 0.26667, p-value = 0.7842
+alternative hypothesis: two-sided
+
+D hodnota neni prilis vysoka, ale p hodnota testu je 0.7842, coz je vyrazne vetsi nez standartni hladina vyznamnosti 0.05.
+Nemame tedy duvod zamitat nulovou hypotezu. Muzeme prohlasit, ze stredni hodnoty tepu po hozeni micem pro valachy a hrebce jsou stejne.
+</i>
 
 
 <font color = "blue">*Maximálné bodové ohodnotenie: 10 bodov*</font>
