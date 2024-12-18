@@ -1,0 +1,187 @@
+# <b>NMFM301, ZS 2024/2025</b>
+
+# <b>Praktická zápočtová práca | Horses</b>
+
+**************
+
+<b>Dátum: 18.12.2024</b>
+
+Méno a priezvisko študenta/študentky <i><font color = "red">(doplniť)</font></i>
+
+Podkladový <a href = "zadanie2024horses.Rmd">Rmd súbor</a> pre vypracovanie pomocou knižnice Knitr <i>(UTF 8 kódovaníe)</i>
+
+**************
+
+## Návod
+
+Vypracovanie zápočtovej práce môžete písať priamo do podkladového <a href = "zadanie2024horses.Rmd">Rmd súboru</a> , ktorý na záver stačí v programe R Studio zkompilovať stlačením tlačítka "Knit HTML".
+Vytvorí sa výsledný HTML súbor s vašími komentármi, zdrojovými kódmi aj R výstupmi. Tento HTML súbor po skončení práce odošlete emailom na adresu <i>maciak/hlavka[AT]karlin.mff.cuni.cz</i>. <br><br>
+
+Je možné využiť aj iný formát výstupu (t.j., typ súboru, ktorý ako prílohu odošlete emailom), ale samotný zdrojový kód v textovom formáte nebude akceptovaný ako regulérny výstup. <br><br>
+
+Zdrojový kód pre program R vkladajte do bloku vyznačenom nasledujúcimi symbolmi: 
+
+<img src = "http://www.karlin.mff.cuni.cz/~maciak/NMFM301/znacky.png"> 
+
+
+Nasledujúce dva príkazy načítajú niektoré užitočné funkcie  (R funkcie, ktoré sme bežne využívali na cvičení, 
+ale nie sú štandardnou súčasťou programu R) a podkladové data. 
+
+```{r}
+rm(list = ls())
+
+load(url("http://msekce.karlin.mff.cuni.cz/~maciak/NMFM301/zadanie2024horses.RData"))
+load(url("http://msekce.karlin.mff.cuni.cz/~maciak/NMFM301/functions.RData"))
+```
+
+Data sú uložené v premennej `horses`.
+
+Medzi príkazy a R výstupy doplňujte svoje zmysluplné odpovede a plnohodnotné komentáre k jednotlivým problémom a otázkam. 
+
+<b>Zápočtová práca obsahuje štyri úlohy a maximálne bodové ohodnotenie je 40 bodov. K úspešnému vypracovaniu zápočtovej práce je potrebné získať aspoň 20 bodov.</b><br><br>
+
+## Data
+
+K dispozíci je  dátový súbor `horses`, ktorý predsavuje namerané hodnoty tepovej frekvencie (HR - heart rate) u několika koni. Jedná sa o experiment, kde u 38 koní bola zmeraná tepová frekvence potom, ako bol na daného koňa aplikovaný konkrétny rušivý podnet. Rušívý podnet je v datach očíslovaný pomocou číslic 1 až 7 a predpokladá sa, že jednotlivé impulzy sú postupne usporiadané vzhľadom k narastajúcemu rušivému efektu (t.j., intenzite hluku, ktorý daný impulz/podnet vyvolá). 
+Okrem tepovej frekvencie a konkrétneho rušivého stimulu, ktorý bol na koňa aplikovaný, sú zaznamenané aj dodatočné popisné premenné (viď nižšie).
+
+```{r}
+head(horses)
+```
+
+Celkovo má dátový súbor 38 nezávislých pozorovaní a zaznamenáva 11  premenných.<br> Podrobný popis jednotlivých premenných je v následujúcej tabuľke.<br><br>
+
+Název | Význam
+------|---------------------------------------------------------------
+`gender` | pohlavie koňa (kobyla, valach a hřebec)
+`type` | typ koňa (teplokrvný, chladnokrvný, poník)
+`utilization` | využitie koňa (pretekársky, tréningový, rekreačný)
+`outside` | čas, ktorý trávi koň vo výbehu, resp. v prírode: 1 = 1 až 3 hodiny denne; 2 = 4 až 9 hodín denne; 3 = viac ako 10 hodín;
+`X1` až `X7` | zaznamenaná tepová frekvence (t.j., počet úderov za minútu) pro sedm stimulů (X1 = tichý zvuk; X2 = náhla hudba; X3 = rozmačkaní plastové láhve; X4 = rozmačkaní plechovky; X5 = použitie spreju; X6 = hodenie lopty; X7 = náhle otvorenie dáždnika)
+**************
+
+<br><br>
+
+## Úloha 1 
+
+<b>Otestujte nulovú hypotézu, že střední tepová frekvence valacha po náhlém otevření deštníku je 100 úderů za minútu.<br>
+Doplňte vhodné popisné charakteristiky a obrázek.</b>
+
+Zvolte pouze jeden test, který je pro daný problém podle vašeho názoru nejvhodnější. Svoju voľbu náležite zdôvodnite. 
+Do odpovědi napíšte, co je nulová hypotéza, alternatíva, vypočtená hodnota testové statistiky a p-hodnota. Uveďte kritický obor testu. 
+s správne interpretujte výsledek testu. Diskutujte, zdali jsou splněny  předpoklady použitého testu.
+
+
+```{r}
+x7_valach <- horses$X7[horses$gender == "valach"]
+par(mfrow = c(2, 1))
+hist(x7_valach, main = "Histogram tepovej frekvencie valacha po otvorení dáždnika", xlab = "Tepová frekvencia")
+boxplot(x7_valach, main = "Boxplot tepovej frekvencie valacha po otvorení dáždnika")
+
+```
+
+<i>
+Pro zacatek vybereme data x7_valach z datoveho souboru a udelame si zakladni vizualizaci.
+Budeme tedy testovat nasledujici hypotezy:
+    Nulova hypoteza - stredni hodnota dat x7_valach je 100
+    Alternativni hypoteza - stredni hodnota dat x7_valach je ruzna od 100
+Budeme potrebovat pouzit jednovyberovy test pro stredni hodnotu. K tomu se nabizi pouzit jednovyberovy t-test/z-test.
+</i>
+
+```{r}
+t.test(x7_valach, mu = 100)
+```
+<i>
+Vysledek testu je nasledujici:
+
+        One Sample t-test
+
+data:  x7_valach
+t = -0.072945, df = 19, p-value = 0.9426
+alternative hypothesis: true mean is not equal to 100
+95 percent confidence interval:
+  83.66884 115.23116
+sample estimates:
+mean of x
+    99.45
+
+Vysledek testu neni nijak vyznamny, p-hodnota je 0.9426, coz je vyrazne vetsi nez standartni hladina vyznamnosti 0.05.
+Nemame tedy duvod zamitat nulovou hypotezu. Stredni hodnota 99.45 je take velmi blizka 100.
+
+Pouziti t-testu je podmineno normalitou dat. Z vizualizace je videt, ze data nejsou uplne normalni, na druhou stranu box plot vypada pomerne symetricky.
+Navic mame 32 pozorovani, coz je v praxi dostatecne pro validni vysledek asymptotickeho z-testu.
+Vysledek testu je navic tak presvedcivy, ze muzeme prohlasit nulovou hypotezu za nezamitnutelnou.
+</i>
+
+<font color = "blue">*Maximálné bodové ohodnotenie: 10 bodov*</font>
+
+<br>
+
+## Úloha  2
+
+<b>Je pravda, že tepová frekvence koní je stejná, když aplikujeme vzruchový stimul č.5 (t.j., použitie spreju)
+a stimul č.4 (t.j., rozmačkání plechovky)?
+Spočítajte interval spoľahlivosti pre vhodnú charakteristiku rozdielu a tento interval interpretujte.</b>
+
+Zvolte pouze jeden test, který je pro daný problém podle vašeho názoru nejvhodnější. Svoju voľbu náležite zdôvodnite. 
+Do odpovědi napíšte, co je nulová hypotéza, alternatíva, vypočtená hodnota testové statistiky a p-hodnota.
+Uveďte kritický obor testu. 
+s správne interpretujte výsledek testu. Diskutujte, zdali jsou splněny  předpoklady použitého testu.
+
+
+```{r}
+### Tu môžete doplniť potrebný zdrojový kod pre program R
+```
+
+<i>Tu môžete doplniť potrebné komentáre k Vášmu riešeniu</i>
+
+
+<font color = "blue">*Maximálné bodové ohodnotenie: 10 bodov*</font>
+
+<br>
+
+## Úloha  3
+
+<b>Lze ze statistického pohledu říct, že tepová frekvence po šestém zvukovém stimulu (hození míče) je stejná pro valachy i hřebce? </b>
+
+Zvolte pouze jeden test, který je pro daný problém podle vašeho názoru nejvhodnější. Svoju voľbu náležite zdôvodnite. 
+Do odpovědi napíšte, co je nulová hypotéza, alternatíva, vypočtená hodnota testové statistiky a p-hodnota. Uveďte kritický obor testu. 
+s správne interpretujte výsledek testu. 
+
+
+```{r}
+### Tu môžete doplniť potrebný zdrojový kod pre program R
+```
+
+<i>Tu môžete doplniť potrebné komentáre k Vášmu riešeniu</i>
+
+
+<font color = "blue">*Maximálné bodové ohodnotenie: 10 bodov*</font>
+
+<br>
+
+## Úloha 4
+
+<b>Pomocou metódy analýzy rozptylu (ANOVA) rozhodnite, či je rozdiel v tepovej frekvencii po prvním zvukovém stimulu
+v závislosti na využití koně (pretekársky, tréningový, rekreačný). </b>
+
+Uvedťe vhodné popisné charakteristiky a doplňte ich vhodným obrázkom. Diskutujte předpoklady testu (není nutné
+statisticky overovať a testovať předpodpoklady, ale můžete nakreslit a okomentovat vhodné grafy).
+Výsledek testu podrobne interpretujte. 
+
+<font color = "blue">*Maximálné bodové ohodnotenie: 10 bodov*</font>
+
+```{r}
+### Tu môžete doplniť potrebný zdrojový kod pre program R
+```
+
+<i>Tu môžete doplniť potrebné komentáre k Vášmu riešeniu</i>
+
+
+
+<br><br>
+
+<font color = "red">Vypracované riešenia (napr. zkompilovaný PDF nebo HTML súbor) odošlite ako prílohu emailom <b>najneskôr do konce cvičení</b> na adresu hlavka[AT]karlin.mff.cuni.cz</font>
+
+
+
